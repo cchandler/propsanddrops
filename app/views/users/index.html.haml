@@ -1,0 +1,9 @@
+%h2 Most Props
+%ul
+  - @prop_users.each do |user|
+    = partial 'user', :user => user, :count => user.props.size
+
+%h2 Most Drops
+%ul
+  - @drop_users.each do |user|
+    = partial 'user', :user => user, :count => user.drops.size
