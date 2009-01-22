@@ -1,9 +1,14 @@
+%h2 Bad-asses
+%ul
+  - @totals.each do |user|
+    = partial 'user', :user => user, :count => user.totals
+
 %h2 Most Props
 %ul
-  - @prop_users.each do |user|
-    = partial 'user', :user => user, :count => user.props.size
+  - @props.each do |user|
+    = partial 'user', :user => user, :count => user.props
 
 %h2 Most Drops
 %ul
-  - @drop_users.each do |user|
-    = partial 'user', :user => user, :count => user.drops.size
+  - @drops.each do |user|
+    = partial 'user', :user => user, :count => user.drops

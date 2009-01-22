@@ -5,7 +5,7 @@
 ################################################################################
 require 'config/dependencies.rb'
 
-use_orm :datamapper
+# use_orm :datamapper
 use_test :rspec
 use_template_engine :haml
 
@@ -20,11 +20,14 @@ Merb::Config.use { |c|
   c[:reload_templates]  = true
 }
 
-DataMapper.setup(
-  :default,
-  :adapter  => 'sqlite3',
-  :database => 'production.db'
-)
+# DataMapper.setup(
+#   :default,
+#   :adapter  => 'sqlite3',
+#   :database => 'production.db'
+# )
+
+COUCHDB = "http://10.0.40.99:5984/twitterprops"
+CouchRest::Model.default_database = CouchRest.database!(COUCHDB)
 
 ################################################################################
 
@@ -33,7 +36,8 @@ DataMapper.setup(
 ################################################################################
 Merb::Router.prepare do
   match('/').to(:controller => 'users', :action =>'index')
-  resources :users
+  match('/:user').to(:controller => 'users', :action => 'show')
+  # resources :users
 end
 ################################################################################
 
@@ -42,7 +46,15 @@ end
 ################################################################################
 class Users < Merb::Controller
   def index
-    @prop_users = @drop_users = User.all
+    rows = CouchRest::Model.default_database.view('messages/by_totals')['rows'].first['value'].collect {|n| TempSort.new(n)}
+    %w(totals props drops).each do |term|
+      self.instance_variable_set("@#{term}", rows.sort {|a,b| b.send(term) <=> a.send(term) } )
+    end
+    
+    render
+  end
+  
+  def show
     render
   end
 end
@@ -50,40 +62,17 @@ end
 ################################################################################
 # MODELS
 ################################################################################
-class User
-  include DataMapper::Resource
+class User < CouchRest::Model
+end
 
-  property :id,      Serial
-  property :name,    String
-  property :handle,  String
-  property :img_url, String
-  timestamps :at
+class TempSort
+  def initialize(values)
+    values.keys.each {|key| TempSort.class_eval("attr_accessor :#{key}"); self.send("#{key}=", values[key]) }
+  end
+end
+
+class Message < CouchRest::Model
+  key_accessor :author, :receiver, :content, :published_at, :status_uri, :image_uri, :tweet_id
   
-  has n, :props, :conditions => { :prop => true }
-  has n, :drops, :conditions => { :prop => false }
-end
-
-class Message
-  include DataMapper::Resource
-
-  property :id,         Serial
-  property :user_id,    Integer
-  property :sender_id,  Integer
-  property :message_id, Integer
-  property :body,       String
-  property :prop,       Boolean
-end
-
-class Prop < Message
-  def initialize(args)
-    super(args)
-    self.prop ||= true
-  end
-end
-
-class Drop < Message
-  def initialize(args)
-    super(args)
-    self.prop ||= false
-  end
+  timestamps!
 end
