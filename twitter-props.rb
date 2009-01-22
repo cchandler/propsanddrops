@@ -5,7 +5,6 @@
 ################################################################################
 require 'config/dependencies.rb'
 
-# use_orm :datamapper
 use_test :rspec
 use_template_engine :haml
 
@@ -20,12 +19,6 @@ Merb::Config.use { |c|
   c[:reload_templates]  = true
 }
 
-# DataMapper.setup(
-#   :default,
-#   :adapter  => 'sqlite3',
-#   :database => 'production.db'
-# )
-
 COUCHDB = "http://10.0.40.99:5984/twitterprops"
 CouchRest::Model.default_database = CouchRest.database!(COUCHDB)
 
@@ -37,7 +30,6 @@ CouchRest::Model.default_database = CouchRest.database!(COUCHDB)
 Merb::Router.prepare do
   match('/').to(:controller => 'users', :action =>'index')
   match('/:user').to(:controller => 'users', :action => 'show')
-  # resources :users
 end
 ################################################################################
 
