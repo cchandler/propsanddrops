@@ -19,11 +19,17 @@ function(key, values, rereduce)
       drops++;
     }
 
-    final_result.push({'key' : result_key, 'props' : props, 'drops' : drops, 'totals' : props - drops})
+   final_result.push({'key' : result_key, 'props' : props, 'drops' : drops, 'totals' : props - drops})
   }
 
 
-  
+  sorted_result = final_result.sort(function(a,b){return b.totals - a.totals;})
 
-  return final_result;
+  var limited_sorted_result = []
+  for(i = 0; i < 10 && i < sorted_result.length ; i++)
+  {
+    limited_sorted_result.push(sorted_result[i]);
+  }
+
+return limited_sorted_result;
 }
