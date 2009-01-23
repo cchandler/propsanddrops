@@ -1,0 +1,16 @@
+.main
+  %h2== Timeline for #{params[:user]}
+  %ul
+    - @messages.each do |message|
+      = partial 'message', :message => message
+
+.right
+  #score
+    %h3 Score
+    = @stats.totals
+  #props
+    %h3 Props
+    = @stats.props
+  #drops
+    %h3 Drops
+    = @stats.drops

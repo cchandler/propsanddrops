@@ -1,0 +1,5 @@
+%li.message
+  .name
+    = link_to message.author['handle'], "/#{message.author['handle']}"
+  .body
+    = message.content

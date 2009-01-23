@@ -37,9 +37,9 @@ end
 # CONTROLLERS
 ################################################################################
 class Users < Merb::Controller
-  def index
-    rows = CouchRest::Model.default_database.view('messages/by_totals')['rows'].first['value'].collect {|n| TempSort.new(n)}
+  def index(key=nil)
     %w(totals props drops).each do |term|
+      rows = CouchRest::Model.default_database.view("messages/by_#{term}")["rows"].first['value'].collect {|n| TempSort.new(n)}
       self.instance_variable_set("@#{term}", rows.sort {|a,b| b.send(term) <=> a.send(term) } )
     end
     
@@ -47,6 +47,15 @@ class Users < Merb::Controller
   end
   
   def show
+    @messages = CouchRest::Model.default_database.view("messages/by_handle", :key => params[:user] )["rows"].collect {|n| TempSort.new(n['value']) }
+    @messages.sort! {|a,b| b.published_at <=> a.published_at }
+    
+    begin
+      @stats = TempSort.new(CouchRest::Model.default_database.view("messages/by_receiver_totals", :key => params[:user] )["rows"].first['value'])
+    rescue
+      @stats = TempSort.new({:totals => 0, :props => 0, :drops => 0})
+    end
+    
     render
   end
 end
@@ -54,12 +63,9 @@ end
 ################################################################################
 # MODELS
 ################################################################################
-class User < CouchRest::Model
-end
-
 class TempSort
   def initialize(values)
-    values.keys.each {|key| TempSort.class_eval("attr_accessor :#{key}"); self.send("#{key}=", values[key]) }
+    (values.keys - ["_id", "_rev","couchrest-type"] ).each {|key| TempSort.class_eval("attr_accessor :\"#{key}\""); self.send("#{key}=", values[key]) }
   end
 end
 
