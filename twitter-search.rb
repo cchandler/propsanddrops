@@ -3,19 +3,22 @@
 require 'rubygems'
 require 'couchrest'
 require 'hpricot'
+require 'open-uri'
 
-COUCHDB = "http://127.0.0.1:5984/twitterprops"
-CouchRest::Model.default_database = CouchRest.database!(COUCHDB)
+# COUCHDB = "http://127.0.0.1:5984/twitterprops"
+# CouchRest::Model.default_database = CouchRest.database!(COUCHDB)
+require 'config/database.rb'
+
 @db = CouchRest::Model.default_database
 
-# http://search.twitter.com/search.atom?q=prop+OR+props+OR+drop+OR+drops
+uri = "http://search.twitter.com/search.atom?q=prop+OR+props+OR+drop+OR+drops"
 
-data = File.open("/Users/integrum/Desktop/twitter.xml")
-doc = Hpricot(data)
+#data = File.open("/Users/integrum/Desktop/twitter.xml")
+doc = Hpricot(open(uri))
 
 record_set = []
 
-@db.view("messages/by_all")['rows'].each {|n| @db.delete(n['value']) }
+#@db.view("messages/by_all")['rows'].each {|n| @db.delete(n['value']) }
 
 (doc/'entry').each do |entry|
   title = (entry/'title').inner_html
@@ -43,5 +46,4 @@ record_set = []
   record_set << record
 end
 
-p record_set
 @db.bulk_save(record_set)

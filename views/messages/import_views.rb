@@ -1,7 +1,7 @@
 
 @db.save(
 {
-  "_id" => "_design/test",
+  "_id" => "_design/messages",
   :views => {
     :by_totals => {
       :map => "function(doc) {
