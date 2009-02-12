@@ -18,8 +18,7 @@ Merb::Config.use { |c|
   c[:reload_templates]  = false
 }
 
-COUCHDB = "http://127.0.0.1:5984/twitterprops"
-CouchRest::Model.default_database = CouchRest.database!(COUCHDB)
+require 'config/database.rb'
 
 ################################################################################
 
